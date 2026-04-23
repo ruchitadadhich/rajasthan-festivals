@@ -1,35 +1,43 @@
 const festivals = [
   {
     id: 1,
-    name: "Diwali Mela",
+    name: "Gangaur Festival",
     city: "Jaipur",
-    date: "1 Nov 2025",
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Diwali_Celebration_2012.jpg/640px-Diwali_Celebration_2012.jpg",
-    description: "Roshan raton ka tyohar — diyon aur patakhon ka mela."
+    date: "10 April 2026",
+    image: "/Gangaur.jpg",
+    description: "Gangaur Rajasthan ka sabse important festival hai. Mahilayein Goddess Gauri ki puja karti hain."
   },
   {
     id: 2,
-    name: "Holi Festival",
-    city: "Mathura",
-    date: "14 Mar 2025",
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/Holi_festival_2.jpg/640px-Holi_festival_2.jpg",
-    description: "Rangon ka tyohar — khushi aur umang ka jawab nahi."
+    name: "Desert Festival",
+    city: "Jaisalmer",
+    date: "15 Feb 2026",
+    image: "/deseart.jpg",
+    description: "Jaisalmer ke sone ke rangon mein camel races, folk music aur cultural shows."
   },
   {
     id: 3,
-    name: "Navratri Garba",
-    city: "Ahmedabad",
-    date: "2 Oct 2025",
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Garba_dance.jpg/640px-Garba_dance.jpg",
-    description: "9 raaton ka garba — dance aur devotion ka sangam."
+    name: "Marwar Festival",
+    city: "Jodhpur",
+    date: "5 Oct 2026",
+    image: "/marwar.jpg",
+    description: "Jodhpur ki shaan — folk music, camel tattoo aur Rajputana culture."
   },
   {
     id: 4,
-    name: "Pushkar Mela",
+    name: "Pushkar Fair",
     city: "Pushkar",
-    date: "10 Nov 2025",
-    image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Pushkar_Fair_%28Camel_Fair%29.jpg/640px-Pushkar_Fair_%28Camel_Fair%29.jpg",
-    description: "Unta mela aur sanskriti ka anokha sangam."
+    date: "10 Nov 2026",
+    image: "/puskar (2).jpg",
+    description: "Duniya ka sabse bada camel mela — hajar saalo ki parampara."
+  },
+  {
+    id: 5,
+    name: "Mewar Festival",
+    city: "Udaipur",
+    date: "9 April 2026",
+    image: "/mewar.jpeg",
+    description: "Udaipur ki jheelon ke kinare Gangaur ki shobhayatra."
   },
 ]
 

@@ -8,7 +8,7 @@ function FestivalDetail({ darkMode }: { darkMode: boolean }) {
   const navigate = useNavigate()
   const { isFavorite, toggleFavorite } = useFavorites()
 
-  const festival = festivals.find((f) => f.slug === slug)
+  const festival =  festivals.find((f) => f.slug === slug)
 
   if (!festival) return (
     <div style={{ padding: "60px 20px", textAlign: "center", color: darkMode ? "#FAF7F2" : "#2B2B2B" }}>

@@ -1,5 +1,6 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
+import { useLocation } from "react-router-dom"
 import festivals from "../Data/Festivals"
 import EventCard from "../Components/EventCards"
 import { useFavorites } from "../hooks/UseFav"
@@ -17,6 +18,15 @@ const containerVariants = {
 function HomePage({ selectedCity, darkMode }: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const { toggleFavorite, isFavorite } = useFavorites()
+  const location = useLocation()
+
+  // Scroll to cards if #all-events in URL
+  useEffect(() => {
+    if (location.hash === "#all-events") {
+      const el = document.getElementById("all-events")
+      if (el) el.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [location])
 
   const filtered = festivals.filter((f) => {
     const matchCity = selectedCity === "All" || f.city === selectedCity
@@ -48,7 +58,6 @@ function HomePage({ selectedCity, darkMode }: HomePageProps) {
             style={{ color: "#E9C46A", fontSize: "11px", fontWeight: "700", letterSpacing: "3px", textTransform: "uppercase", margin: 0 }}>
             ✦ Explore Rajasthan ✦
           </motion.p>
-
           <motion.h1
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.5 }}
@@ -59,7 +68,6 @@ function HomePage({ selectedCity, darkMode }: HomePageProps) {
             }}>
             Discover Rajasthan<br />Festivals
           </motion.h1>
-
           <motion.p
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ delay: 0.4 }}
@@ -93,25 +101,34 @@ function HomePage({ selectedCity, darkMode }: HomePageProps) {
                 minWidth: 0
               }}
             />
-            <button style={{
-              padding: "12px 18px", background: "#C65D3A",
-              color: "#FAF7F2", border: "none", cursor: "pointer",
-              fontSize: "13px", fontWeight: "700", whiteSpace: "nowrap"
-            }}>
+            <button
+              onClick={() => {
+                const el = document.getElementById("all-events")
+                if (el) el.scrollIntoView({ behavior: "smooth" })
+              }}
+              style={{
+                padding: "12px 18px", background: "#C65D3A",
+                color: "#FAF7F2", border: "none", cursor: "pointer",
+                fontSize: "13px", fontWeight: "700", whiteSpace: "nowrap"
+              }}>
               Explore →
             </button>
           </motion.div>
         </div>
       </div>
 
-      {/* ── Cards ── */}
-      <div style={{ padding: "clamp(16px, 4vw, 40px) clamp(12px, 4vw, 32px)" }}>
+      {/* ── Cards Section ── */}
+      {/* 👇 id="all-events" yahan add kiya */}
+      <div id="all-events" style={{ padding: "clamp(16px, 4vw, 40px) clamp(12px, 4vw, 32px)" }}>
         <div style={{
           display: "flex", alignItems: "center",
           justifyContent: "space-between", marginBottom: "24px",
           flexWrap: "wrap", gap: "8px"
         }}>
-          <h2 style={{ fontSize: "clamp(16px, 3vw, 22px)", fontWeight: "700", color: darkMode ? "#E9C46A" : "#C65D3A", margin: 0 }}>
+          <h2 style={{
+            fontSize: "clamp(16px, 3vw, 22px)", fontWeight: "700",
+            color: darkMode ? "#E9C46A" : "#C65D3A", margin: 0
+          }}>
             {selectedCity === "All" ? "🎉 All Festivals" : `📍 ${selectedCity}`}
           </h2>
           <span style={{ fontSize: "13px", color: darkMode ? "#C8B8A8" : "#888888" }}>

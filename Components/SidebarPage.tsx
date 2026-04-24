@@ -10,31 +10,41 @@ interface SidebarProps {
 
 function Sidebar({ selectedCity, setSelectedCity, darkMode, setDarkMode }: SidebarProps) {
   return (
-    <div className="w-64 min-h-screen p-5 flex flex-col gap-6 border-r"
-      style={{ background: darkMode ? "#0A1628" : "#1A3A6B", borderColor: "#D4AF37" }}>
+    <div className="w-56 min-h-screen p-4 flex flex-col gap-5 border-r"
+      style={{
+        background: darkMode
+          ? "linear-gradient(180deg, #2A1008 0%, #1C0A04 100%)"
+          : "linear-gradient(180deg, #C65D3A 0%, #A64B2A 100%)",
+        borderColor: "#E9C46A",
+        boxShadow: "2px 0 12px rgba(198,93,58,0.15)"
+      }}>
 
       {/* Logo */}
-      <div className="text-2xl font-bold" style={{ color: "#D4AF37" }}>
+      <div className="text-xl font-bold pt-2" style={{ color: "#FAF7F2" }}>
         🎊 FestivalIndia
       </div>
 
       {/* Search */}
       <input
         type="text"
-        placeholder="🔍 Search events..."
+        placeholder="🔍 Search..."
         className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
-        style={{ background: "#0F2545", color: "#FFFFFF", border: "1px solid #D4AF37" }}
+        style={{
+          background: "rgba(250,247,242,0.12)",
+          color: "#FAF7F2",
+          border: "1px solid rgba(233,196,106,0.5)"
+        }}
       />
 
       {/* Navigation */}
       <div>
-        <p className="text-xs font-semibold uppercase mb-2" style={{ color: "#D4AF37" }}>Navigation</p>
+        <p className="text-xs font-semibold uppercase mb-2 tracking-wider" style={{ color: "#E9C46A" }}>Menu</p>
         <ul className="flex flex-col gap-1">
           {["🏠 Home", "🎉 All Events", "⭐ Favorites", "📅 Upcoming"].map((item) => (
             <li key={item}
               className="px-3 py-2 rounded-lg cursor-pointer text-sm font-medium transition-all"
-              style={{ color: "#FFFFFF" }}
-              onMouseEnter={e => (e.currentTarget.style.background = "#D4AF37")}
+              style={{ color: "#FAF7F2" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(233,196,106,0.2)")}
               onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
               {item}
             </li>
@@ -44,15 +54,15 @@ function Sidebar({ selectedCity, setSelectedCity, darkMode, setDarkMode }: Sideb
 
       {/* City Filter */}
       <div>
-        <p className="text-xs font-semibold uppercase mb-2" style={{ color: "#D4AF37" }}>City</p>
+        <p className="text-xs font-semibold uppercase mb-2 tracking-wider" style={{ color: "#E9C46A" }}>City</p>
         <ul className="flex flex-col gap-1">
           {cities.map((city) => (
             <li key={city} onClick={() => setSelectedCity(city)}
               className="px-3 py-2 rounded-lg cursor-pointer text-sm font-medium transition-all"
               style={selectedCity === city
-                ? { background: "#D4AF37", color: "#0A1628", fontWeight: "700" }
-                : { color: "#FFFFFF" }}
-              onMouseEnter={e => { if (selectedCity !== city) e.currentTarget.style.background = "#D4AF37" }}
+                ? { background: "#E9C46A", color: "#2B2B2B", fontWeight: "700", borderRadius: "10px" }
+                : { color: "#FAF7F2" }}
+              onMouseEnter={e => { if (selectedCity !== city) e.currentTarget.style.background = "rgba(233,196,106,0.2)" }}
               onMouseLeave={e => { if (selectedCity !== city) e.currentTarget.style.background = "transparent" }}>
               📍 {city}
             </li>
@@ -62,13 +72,13 @@ function Sidebar({ selectedCity, setSelectedCity, darkMode, setDarkMode }: Sideb
 
       {/* Categories */}
       <div>
-        <p className="text-xs font-semibold uppercase mb-2" style={{ color: "#D4AF37" }}>Category</p>
+        <p className="text-xs font-semibold uppercase mb-2 tracking-wider" style={{ color: "#E9C46A" }}>Category</p>
         <ul className="flex flex-col gap-1">
           {categories.map((cat) => (
             <li key={cat}
               className="px-3 py-2 rounded-lg cursor-pointer text-sm font-medium transition-all"
-              style={{ color: "#FFFFFF" }}
-              onMouseEnter={e => (e.currentTarget.style.background = "#D4AF37")}
+              style={{ color: "#FAF7F2" }}
+              onMouseEnter={e => (e.currentTarget.style.background = "rgba(233,196,106,0.2)")}
               onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
               🎭 {cat}
             </li>
@@ -77,15 +87,15 @@ function Sidebar({ selectedCity, setSelectedCity, darkMode, setDarkMode }: Sideb
       </div>
 
       {/* Dark Mode Toggle */}
-      <div className="mt-auto flex items-center justify-between px-3 py-2 rounded-lg"
-        style={{ background: "#0F2545" }}>
-        <span className="text-sm" style={{ color: "#FFFFFF" }}>
-          {darkMode ? "🌙 Dark Mode" : "☀️ Light Mode"}
+      <div className="mt-auto flex items-center justify-between px-3 py-2 rounded-xl"
+        style={{ background: "rgba(250,247,242,0.10)", border: "1px solid rgba(233,196,106,0.2)" }}>
+        <span className="text-xs" style={{ color: "#FAF7F2" }}>
+          {darkMode ? "🌙 Dark" : "☀️ Light"}
         </span>
         <div
           onClick={() => setDarkMode(!darkMode)}
           className="w-10 h-5 rounded-full cursor-pointer transition-all"
-          style={{ background: "#D4AF37" }}>
+          style={{ background: "#6D8B74" }}>
         </div>
       </div>
 

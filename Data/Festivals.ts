@@ -53,6 +53,11 @@ const IMGS = {
   dal_bati_1:       "/dal bati1.webp",
   dal_bati_2:       "/dal batgit2.jpg",
   dal_bati_3:       "/dal bati3.jpg",
+
+  jaipur_city_main:    "/jaipur.avif",
+  jaipur_city_1:       "/jaipur1.webp",
+  jaipur_city_2:       "/jaipur2.webp",
+  jaipur_city_3:       "/jaipur3.jpg",
 }
 
 const festivals: Festival[] = [

@@ -7,6 +7,7 @@ import { useFavorites } from "../hooks/UseFav"
 
 interface HomePageProps {
   selectedCity: string
+  selectedCategory: string
   darkMode: boolean
 }
 
@@ -15,12 +16,11 @@ const containerVariants = {
   show: { transition: { staggerChildren: 0.1 } }
 }
 
-function HomePage({ selectedCity, darkMode }: HomePageProps) {
+function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const { toggleFavorite, isFavorite } = useFavorites()
   const location = useLocation()
 
-  // Scroll to cards if #all-events in URL
   useEffect(() => {
     if (location.hash === "#all-events") {
       const el = document.getElementById("all-events")
@@ -29,12 +29,22 @@ function HomePage({ selectedCity, darkMode }: HomePageProps) {
   }, [location])
 
   const filtered = festivals.filter((f) => {
-    const matchCity = selectedCity === "All" || f.city === selectedCity
-    const matchSearch =
+    const matchCity     = selectedCity === "All"     || f.city === selectedCity
+    const matchCategory = selectedCategory === "All" || f.category === selectedCategory
+    const matchSearch   =
       f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       f.city.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchCity && matchSearch
+    return matchCity && matchCategory && matchSearch
   })
+
+  // Heading label
+  const headingLabel = () => {
+    if (selectedCity !== "All" && selectedCategory !== "All")
+      return `📍 ${selectedCity} · ${selectedCategory}`
+    if (selectedCity !== "All") return `📍 ${selectedCity}`
+    if (selectedCategory !== "All") return `🏷️ ${selectedCategory}`
+    return "🎉 All Festivals"
+  }
 
   return (
     <div style={{ minHeight: "100vh", background: darkMode ? "#1C1008" : "#FAF7F2" }}>
@@ -117,8 +127,25 @@ function HomePage({ selectedCity, darkMode }: HomePageProps) {
         </div>
       </div>
 
+      {/* ── Active Category Pill (agar All nahi) ── */}
+      {selectedCategory !== "All" && (
+        <div style={{
+          padding: "12px clamp(12px, 4vw, 32px) 0",
+          display: "flex", alignItems: "center", gap: "8px"
+        }}>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: "6px",
+            padding: "5px 14px", borderRadius: "20px",
+            background: "#E9C46A", color: "#2B2B2B",
+            fontSize: "12px", fontWeight: "700"
+          }}>
+            {selectedCategory}
+            <span style={{ opacity: 0.6 }}>· {filtered.length} results</span>
+          </span>
+        </div>
+      )}
+
       {/* ── Cards Section ── */}
-      {/* 👇 id="all-events" yahan add kiya */}
       <div id="all-events" style={{ padding: "clamp(16px, 4vw, 40px) clamp(12px, 4vw, 32px)" }}>
         <div style={{
           display: "flex", alignItems: "center",
@@ -129,7 +156,7 @@ function HomePage({ selectedCity, darkMode }: HomePageProps) {
             fontSize: "clamp(16px, 3vw, 22px)", fontWeight: "700",
             color: darkMode ? "#E9C46A" : "#C65D3A", margin: 0
           }}>
-            {selectedCity === "All" ? "🎉 All Festivals" : `📍 ${selectedCity}`}
+            {headingLabel()}
           </h2>
           <span style={{ fontSize: "13px", color: darkMode ? "#C8B8A8" : "#888888" }}>
             {filtered.length} festival{filtered.length !== 1 ? "s" : ""} found
@@ -138,6 +165,7 @@ function HomePage({ selectedCity, darkMode }: HomePageProps) {
 
         {filtered.length > 0 ? (
           <motion.div
+            key={`${selectedCity}-${selectedCategory}`}
             variants={containerVariants}
             initial="hidden" animate="show"
             style={{
@@ -160,7 +188,12 @@ function HomePage({ selectedCity, darkMode }: HomePageProps) {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             style={{ textAlign: "center", padding: "60px 0", color: darkMode ? "#C8B8A8" : "#999999" }}>
             <p style={{ fontSize: "40px", marginBottom: "12px" }}>🔍</p>
-            <p style={{ fontSize: "16px" }}>No results for "<strong>{searchQuery}</strong>"</p>
+            <p style={{ fontSize: "16px" }}>
+              No festivals found
+              {selectedCategory !== "All" && <> in <strong>{selectedCategory}</strong></>}
+              {selectedCity !== "All" && <> for <strong>{selectedCity}</strong></>}
+              {searchQuery && <> matching "<strong>{searchQuery}</strong>"</>}
+            </p>
           </motion.div>
         )}
       </div>

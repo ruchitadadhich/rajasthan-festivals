@@ -44,11 +44,6 @@ function Sidebar({ selectedCity, setSelectedCity, selectedCategory, setSelectedC
   const [cityOpen, setCityOpen] = useState(true)
   const [catOpen, setCatOpen] = useState(true)
 
-  const getCategoryCount = (cat: string) => {
-    if (cat === "All") return festivals.length
-    return festivals.filter(f => f.category === cat).length
-  }
-
   const sectionHeaderStyle: React.CSSProperties = {
     display: "flex",
     alignItems: "center",
@@ -228,7 +223,6 @@ function Sidebar({ selectedCity, setSelectedCity, selectedCategory, setSelectedC
           <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "2px" }}>
             {categories.map(({ label, icon }) => {
               const active = selectedCategory === label
-              const count  = getCategoryCount(label)
               return (
                 <li
                   key={label}
@@ -259,16 +253,6 @@ function Sidebar({ selectedCity, setSelectedCity, selectedCategory, setSelectedC
                     color: active ? "#2B2B2B" : "#FAF7F2",
                   }}>
                     {label}
-                  </span>
-
-                  <span style={{
-                    fontSize: "10px", fontWeight: "700",
-                    padding: "1px 6px", borderRadius: "20px",
-                    background: active ? "rgba(166,75,42,0.25)" : "rgba(233,196,106,0.2)",
-                    color: active ? "#A64B2A" : "rgba(233,196,106,0.9)",
-                    flexShrink: 0, minWidth: "18px", textAlign: "center"
-                  }}>
-                    {count}
                   </span>
                 </li>
               )

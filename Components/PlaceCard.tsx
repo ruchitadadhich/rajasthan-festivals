@@ -1,6 +1,7 @@
 import { motion } from "framer-motion"
 import { useNavigate } from "react-router-dom"
 import type { TouristPlace } from "../Data/Travel"
+import { useFavorites } from "../hooks/UseFav"
 
 interface PlaceCardProps {
   place: TouristPlace
@@ -9,6 +10,9 @@ interface PlaceCardProps {
 
 function PlaceCard({ place, darkMode }: PlaceCardProps) {
   const navigate = useNavigate()
+  const { isPlaceFavorite, togglePlaceFavorite } = useFavorites()
+
+  const saved = isPlaceFavorite(place.id)
 
   return (
     <motion.div
@@ -36,7 +40,7 @@ function PlaceCard({ place, darkMode }: PlaceCardProps) {
           onError={e => { e.currentTarget.src = "https://via.placeholder.com/600x300?text=No+Image" }}
         />
 
-        {/* Category Badge — same as EventCard */}
+        {/* Category Badge */}
         <span style={{
           position: "absolute", top: "10px", left: "10px",
           background: "rgba(198,93,58,0.90)", color: "#FAF7F2",
@@ -46,7 +50,7 @@ function PlaceCard({ place, darkMode }: PlaceCardProps) {
           Tourist Place
         </span>
 
-        {/* Rating — same position as heart in EventCard */}
+        {/* Rating */}
         <span style={{
           position: "absolute", top: "10px", right: "10px",
           background: "rgba(250,247,242,0.92)",
@@ -68,7 +72,6 @@ function PlaceCard({ place, darkMode }: PlaceCardProps) {
           {place.name}
         </h2>
 
-        {/* City + Tag — same as city + date row in EventCard */}
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
           <span style={{ fontSize: "12px", color: "#C65D3A", fontWeight: "600" }}>
             📍 {place.city}
@@ -87,20 +90,24 @@ function PlaceCard({ place, darkMode }: PlaceCardProps) {
           {place.description}
         </p>
 
-        {/* Same two-button layout as EventCard */}
+        {/* Buttons */}
         <div style={{ display: "flex", gap: "8px" }}>
-          <button
-            onClick={(e) => e.stopPropagation()}
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            onClick={(e) => { e.stopPropagation(); togglePlaceFavorite(place.id) }}
             style={{
               flex: 1, padding: "8px", borderRadius: "10px",
-              border: "1.5px solid #E9C46A", background: "transparent",
+              border: "1.5px solid #E9C46A",
+              background: saved ? "rgba(233,196,106,0.18)" : "transparent",
               color: darkMode ? "#E9C46A" : "#C65D3A",
-              fontSize: "12px", fontWeight: "600", cursor: "pointer"
+              fontSize: "12px", fontWeight: "600", cursor: "pointer",
+              transition: "background 0.2s"
             }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(233,196,106,0.15)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-            🤍 Save
-          </button>
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(233,196,106,0.25)")}
+            onMouseLeave={e => (e.currentTarget.style.background = saved ? "rgba(233,196,106,0.18)" : "transparent")}>
+            {saved ? "❤️ Saved" : "🤍 Save"}
+          </motion.button>
+
           <button
             onClick={(e) => { e.stopPropagation(); navigate(`/place/${place.id}`) }}
             style={{

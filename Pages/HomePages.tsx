@@ -10,6 +10,7 @@ import { useFavorites } from "../hooks/UseFav"
 interface HomePageProps {
   selectedCity: string
   selectedCategory: string
+  selectedPlaceCity: string   // 👈 NEW
   darkMode: boolean
 }
 
@@ -18,7 +19,7 @@ const containerVariants = {
   show: { transition: { staggerChildren: 0.1 } }
 }
 
-function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
+function HomePage({ selectedCity, selectedCategory, selectedPlaceCity, darkMode }: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState("")
   const { toggleFavorite, isFavorite } = useFavorites()
   const location = useLocation()
@@ -32,25 +33,41 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
 
   // ── Merge both data sources ──
   const allFestivals = festivals.map(f => ({ ...f, _type: "festival" as const }))
-  const allPlaces = touristPlaces.map(p => ({ ...p, _type: "place" as const }))
-  const allData = [...allFestivals, ...allPlaces]
+  const allPlaces    = touristPlaces.map(p => ({ ...p, _type: "place" as const }))
+  const allData      = [...allFestivals, ...allPlaces]
 
   // ── Filter ──
   const filtered = allData.filter((item) => {
-    const matchCity = selectedCity === "All" || item.city === selectedCity
-    const matchCategory = selectedCategory === "All" || item.category === selectedCategory
     const matchSearch =
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.city.toLowerCase().includes(searchQuery.toLowerCase())
+
+    if (item._type === "place") {
+      // Tourist Places section filter — "All Places" means show all places
+      const matchPlaceCity =
+        selectedPlaceCity === "All Places" || item.city === selectedPlaceCity
+      // Also respect the global city filter if set
+      const matchCity = selectedCity === "All" || item.city === selectedCity
+      return matchPlaceCity && matchCity && matchSearch
+    }
+
+    // Festival filter
+    const matchCity     = selectedCity === "All" || item.city === selectedCity
+    const matchCategory = selectedCategory === "All" || item.category === selectedCategory
+    // If user picked a specific place city, hide festivals (focus on places)
+    const placeFilterActive = selectedPlaceCity !== "All Places"
+    if (placeFilterActive) return false
+
     return matchCity && matchCategory && matchSearch
   })
 
   // ── Counts for pill ──
-  const festCount = filtered.filter(i => i._type === "festival").length
+  const festCount  = filtered.filter(i => i._type === "festival").length
   const placeCount = filtered.filter(i => i._type === "place").length
 
   // ── Heading ──
   const headingLabel = () => {
+    if (selectedPlaceCity !== "All Places") return `🏰 Tourist Places · ${selectedPlaceCity}`
     if (selectedCategory === "Tourist Places") return "🗺️ Tourist Places"
     if (selectedCity !== "All" && selectedCategory !== "All")
       return `📍 ${selectedCity} · ${selectedCategory}`
@@ -146,8 +163,19 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
         padding: "14px clamp(12px, 4vw, 32px) 0",
         display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap"
       }}>
-        {/* Active category pill */}
-        {selectedCategory !== "All" && (
+        {selectedPlaceCity !== "All Places" && (
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: "6px",
+            padding: "5px 14px", borderRadius: "20px",
+            background: "#E9C46A", color: "#2B2B2B",
+            fontSize: "12px", fontWeight: "700"
+          }}>
+            🏰 {selectedPlaceCity}
+            <span style={{ opacity: 0.6 }}>· {placeCount} places</span>
+          </span>
+        )}
+
+        {selectedCategory !== "All" && selectedPlaceCity === "All Places" && (
           <span style={{
             display: "inline-flex", alignItems: "center", gap: "6px",
             padding: "5px 14px", borderRadius: "20px",
@@ -159,8 +187,7 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
           </span>
         )}
 
-        {/* Festival / Place count badges — only on All category */}
-        {selectedCategory === "All" && festCount > 0 && (
+        {selectedCategory === "All" && selectedPlaceCity === "All Places" && festCount > 0 && (
           <span style={{
             padding: "4px 12px", borderRadius: "20px",
             background: "rgba(198,93,58,0.15)",
@@ -170,7 +197,7 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
             🎉 {festCount} Festivals
           </span>
         )}
-        {selectedCategory === "All" && placeCount > 0 && (
+        {selectedCategory === "All" && selectedPlaceCity === "All Places" && placeCount > 0 && (
           <span style={{
             padding: "4px 12px", borderRadius: "20px",
             background: "rgba(13,148,136,0.1)",
@@ -202,7 +229,7 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
 
         {filtered.length > 0 ? (
           <motion.div
-            key={`${selectedCity}-${selectedCategory}`}
+            key={`${selectedCity}-${selectedCategory}-${selectedPlaceCity}`}
             variants={containerVariants}
             initial="hidden" animate="show"
             style={{
@@ -235,6 +262,7 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
             <p style={{ fontSize: "40px", marginBottom: "12px" }}>🔍</p>
             <p style={{ fontSize: "16px" }}>
               No results found
+              {selectedPlaceCity !== "All Places" && <> in <strong>{selectedPlaceCity}</strong></>}
               {selectedCategory !== "All" && <> in <strong>{selectedCategory}</strong></>}
               {selectedCity !== "All" && <> for <strong>{selectedCity}</strong></>}
               {searchQuery && <> matching "<strong>{searchQuery}</strong>"</>}

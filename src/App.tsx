@@ -6,35 +6,33 @@ import PlaceDetail from "../Pages/PageDetail"
 import FestivalDetail from "../Pages/FetivalDetailPage"
 import FavoritesPage from "../Pages/FavDetailPage"
 import UpcomingPage from "../Pages/UpComing"
+
 function AppInner() {
   const [selectedCity, setSelectedCity] = useState("All")
   const [selectedCategory, setSelectedCategory] = useState("All")
+  const [selectedPlaceCity, setSelectedPlaceCity] = useState("All Places") // 👈 NEW
   const [darkMode, setDarkMode] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  const location  = useLocation()
+  const location = useLocation()
   const isHomePage = location.pathname === "/"
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", alignItems: "flex-start" }}>
 
-      {/* ── DESKTOP SIDEBAR — sticky, always visible on scroll ── */}
+      {/* ── DESKTOP SIDEBAR ── */}
       {isHomePage && (
         <div
           className="desktop-sidebar"
-          style={{
-            position: "sticky",
-            top: 0,
-            height: "100vh",
-            flexShrink: 0,
-            alignSelf: "flex-start",
-          }}
+          style={{ position: "sticky", top: 0, height: "100vh", flexShrink: 0, alignSelf: "flex-start" }}
         >
           <Sidebar
             selectedCity={selectedCity}
             setSelectedCity={setSelectedCity}
             selectedCategory={selectedCategory}
             setSelectedCategory={setSelectedCategory}
+            selectedPlaceCity={selectedPlaceCity}         // 👈 NEW
+            setSelectedPlaceCity={setSelectedPlaceCity}   // 👈 NEW
             darkMode={darkMode}
             setDarkMode={setDarkMode}
           />
@@ -62,6 +60,8 @@ function AppInner() {
             setSelectedCity={(city) => { setSelectedCity(city); setSidebarOpen(false) }}
             selectedCategory={selectedCategory}
             setSelectedCategory={(cat) => { setSelectedCategory(cat); setSidebarOpen(false) }}
+            selectedPlaceCity={selectedPlaceCity}                                          // 👈 NEW
+            setSelectedPlaceCity={(city) => { setSelectedPlaceCity(city); setSidebarOpen(false) }} // 👈 NEW
             darkMode={darkMode}
             setDarkMode={setDarkMode}
           />
@@ -102,13 +102,14 @@ function AppInner() {
             <HomePage
               selectedCity={selectedCity}
               selectedCategory={selectedCategory}
+              selectedPlaceCity={selectedPlaceCity}   // 👈 NEW
               darkMode={darkMode}
             />
           } />
           <Route path="/festival/:slug" element={<FestivalDetail darkMode={darkMode} />} />
           <Route path="/favorites"      element={<FavoritesPage  darkMode={darkMode} />} />
           <Route path="/upcoming"       element={<UpcomingPage   darkMode={darkMode} />} />
-          <Route path="/place/:id" element={<PlaceDetail darkMode={darkMode} />} />
+          <Route path="/place/:id"      element={<PlaceDetail    darkMode={darkMode} />} />
         </Routes>
       </div>
 

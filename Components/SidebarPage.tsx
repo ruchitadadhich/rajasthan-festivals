@@ -5,21 +5,34 @@ import {
   MapPin, Moon, Sun, Menu,
   LayoutGrid, Landmark, Star, Music, PersonStanding,
   UtensilsCrossed, FerrisWheel, Palette, ChevronDown,
-  MapPinned
+  MapPinned, Castle, Globe, Building2, Waves, Sunset,
+  TreePalm, PawPrint, Mountain
 } from "lucide-react"
 
 const cities = ["All", "Jaipur", "Jodhpur", "Udaipur", "Jaisalmer", "Pushkar", "Bikaner", "Dungarpur"]
 
 const categories = [
-  { label: "All",         icon: <LayoutGrid      size={15} /> },
-  { label: "Tourist Places", icon: <MapPinned    size={15} /> }, 
-  { label: "Cultural",    icon: <Landmark        size={15} /> },
-  { label: "Religious",   icon: <Star            size={15} /> },
-  { label: "Music",       icon: <Music           size={15} /> },
-  { label: "Dance",       icon: <PersonStanding  size={15} /> },
-  { label: "Food",        icon: <UtensilsCrossed size={15} /> },
-  { label: "Fair / Mela", icon: <FerrisWheel     size={15} /> },
-  { label: "Art & Craft", icon: <Palette         size={15} /> },
+  { label: "All",            icon: <LayoutGrid      size={15} /> },
+  { label: "Tourist Places", icon: <MapPinned       size={15} /> },
+  { label: "Cultural",       icon: <Landmark        size={15} /> },
+  { label: "Religious",      icon: <Star            size={15} /> },
+  { label: "Music",          icon: <Music           size={15} /> },
+  { label: "Dance",          icon: <PersonStanding  size={15} /> },
+  { label: "Food",           icon: <UtensilsCrossed size={15} /> },
+  { label: "Fair / Mela",    icon: <FerrisWheel     size={15} /> },
+  { label: "Art & Craft",    icon: <Palette         size={15} /> },
+]
+
+// Tourist place cities with lucide icons
+const touristPlaceCities = [
+  { label: "All Places", icon: <Globe      size={14} /> },
+  { label: "Jaipur",     icon: <Castle     size={14} /> },
+  { label: "Jodhpur",    icon: <Building2  size={14} /> },
+  { label: "Udaipur",    icon: <Waves      size={14} /> },
+  { label: "Jaisalmer",  icon: <Sunset     size={14} /> },
+  { label: "Pushkar",    icon: <TreePalm   size={14} /> },
+  { label: "Bikaner",    icon: <PawPrint   size={14} /> },
+  { label: "Dungarpur",  icon: <Mountain   size={14} /> },
 ]
 
 interface SidebarProps {
@@ -27,6 +40,8 @@ interface SidebarProps {
   setSelectedCity: (city: string) => void
   selectedCategory: string
   setSelectedCategory: (cat: string) => void
+  selectedPlaceCity: string
+  setSelectedPlaceCity: (city: string) => void
   darkMode: boolean
   setDarkMode: (val: boolean) => void
 }
@@ -38,12 +53,18 @@ const navItems: { label: string; path: string; icon: React.ReactNode; city?: str
   { label: "Upcoming",   path: "/upcoming",    icon: <Clock        size={16} /> },
 ]
 
-function Sidebar({ selectedCity, setSelectedCity, selectedCategory, setSelectedCategory, darkMode, setDarkMode }: SidebarProps) {
+function Sidebar({
+  selectedCity, setSelectedCity,
+  selectedCategory, setSelectedCategory,
+  selectedPlaceCity, setSelectedPlaceCity,
+  darkMode, setDarkMode,
+}: SidebarProps) {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const [cityOpen, setCityOpen] = useState(true)
-  const [catOpen, setCatOpen] = useState(true)
+  const [cityOpen,  setCityOpen]  = useState(true)
+  const [catOpen,   setCatOpen]   = useState(true)
+  const [placeOpen, setPlaceOpen] = useState(true)
 
   const sectionHeaderStyle: React.CSSProperties = {
     display: "flex",
@@ -160,10 +181,7 @@ function Sidebar({ selectedCity, setSelectedCity, selectedCategory, setSelectedC
           <ChevronDown
             size={13}
             color="rgba(233,196,106,0.7)"
-            style={{
-              transition: "transform 0.25s",
-              transform: cityOpen ? "rotate(180deg)" : "rotate(0deg)",
-            }}
+            style={{ transition: "transform 0.25s", transform: cityOpen ? "rotate(180deg)" : "rotate(0deg)" }}
           />
         </div>
 
@@ -209,10 +227,7 @@ function Sidebar({ selectedCity, setSelectedCity, selectedCategory, setSelectedC
           <ChevronDown
             size={13}
             color="rgba(233,196,106,0.7)"
-            style={{
-              transition: "transform 0.25s",
-              transform: catOpen ? "rotate(180deg)" : "rotate(0deg)",
-            }}
+            style={{ transition: "transform 0.25s", transform: catOpen ? "rotate(180deg)" : "rotate(0deg)" }}
           />
         </div>
 
@@ -243,11 +258,70 @@ function Sidebar({ selectedCity, setSelectedCity, selectedCategory, setSelectedC
                   }}
                   onMouseEnter={e => { if (!active) e.currentTarget.style.background = "rgba(233,196,106,0.15)" }}
                   onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent" }}>
-
                   <span style={{ flexShrink: 0, display: "flex", alignItems: "center", color: active ? "#2B2B2B" : "#FAF7F2" }}>
                     {icon}
                   </span>
+                  <span style={{
+                    flex: 1, minWidth: 0,
+                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    color: active ? "#2B2B2B" : "#FAF7F2",
+                  }}>
+                    {label}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      </div>
 
+      {/* ── Tourist Places Dropdown ── NEW SECTION ── */}
+      <div style={{ flexShrink: 0 }}>
+        <div
+          style={sectionHeaderStyle}
+          onClick={() => setPlaceOpen(o => !o)}
+          onMouseEnter={e => (e.currentTarget.style.background = "rgba(233,196,106,0.08)")}
+          onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <Castle size={11} color="rgba(233,196,106,0.7)" />
+            <span style={sectionLabelStyle}>Tourist Places</span>
+          </div>
+          <ChevronDown
+            size={13}
+            color="rgba(233,196,106,0.7)"
+            style={{ transition: "transform 0.25s", transform: placeOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+          />
+        </div>
+
+        <div style={{
+          overflow: "hidden",
+          maxHeight: placeOpen ? `${touristPlaceCities.length * 42}px` : "0px",
+          transition: "max-height 0.3s ease",
+        }}>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "2px" }}>
+            {touristPlaceCities.map(({ label, icon }) => {
+              const active = selectedPlaceCity === label
+              return (
+                <li
+                  key={label}
+                  onClick={() => { setSelectedPlaceCity(label); navigate("/") }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: "8px",
+                    padding: "8px 10px", borderRadius: "10px",
+                    cursor: "pointer", fontSize: "13px",
+                    fontWeight: active ? "700" : "500",
+                    color: active ? "#2B2B2B" : "#FAF7F2",
+                    background: active ? "#E9C46A" : "transparent",
+                    borderLeft: active ? "3px solid #A64B2A" : "3px solid transparent",
+                    transform: active ? "translateX(4px)" : "translateX(0)",
+                    transition: "all 0.2s",
+                    boxShadow: active ? "0 2px 8px rgba(233,196,106,0.35)" : "none",
+                    minWidth: 0, boxSizing: "border-box", width: "100%",
+                  }}
+                  onMouseEnter={e => { if (!active) e.currentTarget.style.background = "rgba(233,196,106,0.15)" }}
+                  onMouseLeave={e => { if (!active) e.currentTarget.style.background = "transparent" }}>
+                  <span style={{ flexShrink: 0, display: "flex", alignItems: "center", color: active ? "#2B2B2B" : "#FAF7F2" }}>{icon}</span>
                   <span style={{
                     flex: 1, minWidth: 0,
                     overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",

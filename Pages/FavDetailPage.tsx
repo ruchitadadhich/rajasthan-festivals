@@ -1,261 +1,374 @@
-import { useParams, useNavigate } from "react-router-dom"
-import { motion } from "framer-motion"
 import { useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { useNavigate } from "react-router-dom"
 import festivals from "../Data/Festivals"
+import touristPlaces from "../Data/Travel"
 import { useFavorites } from "../hooks/UseFav"
 
-function FestivalDetail({ darkMode }: { darkMode: boolean }) {
-  const { slug } = useParams()
+const containerVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08 } }
+}
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 24 },
+  show:   { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" as const } }
+}
+
+function FavoritesPage({ darkMode }: { darkMode: boolean }) {
   const navigate = useNavigate()
-  const { isFavorite, toggleFavorite } = useFavorites()
-  const [selectedImg, setSelectedImg] = useState<string | null>(null)
+  const {
+    favorites, toggleFavorite, isFavorite,
+    placeFavorites, togglePlaceFavorite, isPlaceFavorite
+  } = useFavorites()
 
-  const festival = festivals.find((f) => f.slug === slug)
-
-  if (!festival) return (
-    <div style={{ padding: "60px 20px", textAlign: "center", color: darkMode ? "#FAF7F2" : "#2B2B2B" }}>
-      <p style={{ fontSize: "48px" }}>😕</p>
-      <p style={{ fontSize: "20px", marginBottom: "16px" }}>Festival not found</p>
-      <button onClick={() => navigate("/")}
-        style={{ padding: "10px 24px", background: "#C65D3A", color: "#FAF7F2", border: "none", borderRadius: "10px", cursor: "pointer", fontSize: "15px" }}>
-        ← Back to Home
-      </button>
-    </div>
-  )
+  const [activeTab, setActiveTab] = useState<"festivals" | "places">("festivals")
 
   const bg     = darkMode ? "#1C1008" : "#FAF7F2"
   const cardBg = darkMode ? "#2A1A0E" : "#FFFFFF"
   const text   = darkMode ? "#FAF7F2" : "#2B2B2B"
   const muted  = darkMode ? "#C8B8A8" : "#666666"
 
-  // ── encode spaces in local paths so browser loads them correctly ──
-  const fixUrl = (url: string) =>
-    url.startsWith("/") ? url.replace(/ /g, "%20") : url
+  // ── Saved festivals & places ──
+  const savedFestivals = festivals.filter(f => favorites.includes(f.id))
+  const savedPlaces    = touristPlaces.filter(p => placeFavorites.includes(p.id))
+
+  // ── Tab button style helper ──
+  const tabStyle = (tab: "festivals" | "places"): React.CSSProperties => ({
+    flex: 1,
+    padding: "10px 0",
+    borderRadius: "12px",
+    border: "none",
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: "700",
+    transition: "all 0.2s",
+    background: activeTab === tab ? "#C65D3A" : "transparent",
+    color:      activeTab === tab ? "#FAF7F2"  : (darkMode ? "#C8B8A8" : "#888888"),
+    boxShadow:  activeTab === tab ? "0 4px 12px rgba(198,93,58,0.3)" : "none",
+  })
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
-      style={{ minHeight: "100vh", background: bg }}>
+    <div style={{ minHeight: "100vh", background: bg }}>
 
-      {/* ── Lightbox ── */}
-      {selectedImg && (
-        <div
-          onClick={() => setSelectedImg(null)}
+      {/* ── Header ── */}
+      <div style={{
+        padding: "clamp(20px, 4vw, 40px) clamp(16px, 4vw, 32px) 0",
+        maxWidth: "960px", margin: "0 auto"
+      }}>
+        <button
+          onClick={() => navigate("/")}
           style={{
-            position: "fixed", inset: 0, zIndex: 100,
-            background: "rgba(0,0,0,0.88)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "20px"
+            background: "transparent", border: "none",
+            color: "#C65D3A", fontSize: "13px", fontWeight: "600",
+            cursor: "pointer", padding: "0 0 16px 0", display: "flex",
+            alignItems: "center", gap: "4px"
           }}>
-          <img
-            src={fixUrl(selectedImg)}
-            alt="Gallery"
-            style={{ maxWidth: "100%", maxHeight: "90vh", borderRadius: "16px", objectFit: "contain" }}
-          />
-          <button
-            onClick={() => setSelectedImg(null)}
-            style={{
-              position: "absolute", top: "16px", right: "16px",
-              background: "rgba(250,247,242,0.15)", border: "1px solid rgba(250,247,242,0.3)",
-              color: "#FAF7F2", borderRadius: "50%", width: "36px", height: "36px",
-              fontSize: "18px", cursor: "pointer"
-            }}>✕</button>
-        </div>
-      )}
+          ← Back to Home
+        </button>
 
-      {/* ── Hero ── */}
-      <div style={{ position: "relative", height: "clamp(220px, 45vw, 400px)", overflow: "hidden" }}>
-        <motion.img
-          initial={{ scale: 1.08 }} animate={{ scale: 1 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          src={fixUrl(festival.image)} alt={festival.name}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-        />
+        <h1 style={{
+          fontSize: "clamp(20px, 4vw, 28px)", fontWeight: "800",
+          color: darkMode ? "#E9C46A" : "#C65D3A", margin: "0 0 6px"
+        }}>
+          ❤️ My Wishlist
+        </h1>
+        <p style={{ fontSize: "13px", color: muted, margin: "0 0 24px" }}>
+          {savedFestivals.length} festival{savedFestivals.length !== 1 ? "s" : ""} &nbsp;•&nbsp;
+          {savedPlaces.length} tourist place{savedPlaces.length !== 1 ? "s" : ""} saved
+        </p>
+
+        {/* ── Tabs ── */}
         <div style={{
-          position: "absolute", inset: 0,
-          background: "linear-gradient(to bottom, rgba(28,10,8,0.3) 0%, rgba(28,10,8,0.80) 100%)"
-        }} />
-
-        <button onClick={() => navigate(-1)} style={{
-          position: "absolute", top: "14px", left: "14px",
-          background: "rgba(250,247,242,0.15)", border: "1px solid rgba(250,247,242,0.3)",
-          color: "#FAF7F2", padding: "7px 14px", borderRadius: "10px",
-          cursor: "pointer", fontSize: "12px", fontWeight: "600"
-        }}>← Back</button>
-
-        <motion.button whileTap={{ scale: 1.2 }}
-          onClick={() => toggleFavorite(festival.id)}
-          style={{
-            position: "absolute", top: "14px", right: "14px",
-            background: "rgba(250,247,242,0.15)", border: "1px solid rgba(250,247,242,0.3)",
-            color: "#FAF7F2", padding: "7px 14px", borderRadius: "10px",
-            cursor: "pointer", fontSize: "12px", fontWeight: "600"
-          }}>
-          {isFavorite(festival.id) ? "❤️ Saved" : "🤍 Save"}
-        </motion.button>
-
-        <div style={{ position: "absolute", bottom: "20px", left: "16px", right: "16px" }}>
-          <span style={{
-            background: "#C65D3A", color: "#FAF7F2",
-            fontSize: "10px", fontWeight: "700", padding: "3px 10px",
-            borderRadius: "20px", letterSpacing: "1px"
-          }}>{festival.category}</span>
-          <h1 style={{
-            color: "#FAF7F2", fontWeight: "800", margin: "6px 0 4px",
-            lineHeight: "1.2", fontSize: "clamp(20px, 5vw, 36px)"
-          }}>{festival.name}</h1>
-          <p style={{ color: "#E9C46A", fontSize: "clamp(11px, 2vw, 14px)", margin: 0 }}>
-            📍 {festival.city} &nbsp;•&nbsp; 📅 {festival.date} &nbsp;•&nbsp; ⏱ {festival.duration}
-          </p>
+          display: "flex", gap: "6px",
+          background: darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)",
+          borderRadius: "14px", padding: "4px",
+          marginBottom: "28px"
+        }}>
+          <button style={tabStyle("festivals")} onClick={() => setActiveTab("festivals")}>
+            🎉 Festivals ({savedFestivals.length})
+          </button>
+          <button style={tabStyle("places")} onClick={() => setActiveTab("places")}>
+            🏰 Tourist Places ({savedPlaces.length})
+          </button>
         </div>
       </div>
 
       {/* ── Content ── */}
       <div style={{
-        maxWidth: "900px", margin: "0 auto",
-        padding: "clamp(16px, 4vw, 40px) clamp(12px, 4vw, 24px)",
-        display: "flex", flexDirection: "column", gap: "20px"
+        maxWidth: "960px", margin: "0 auto",
+        padding: "0 clamp(16px, 4vw, 32px) clamp(32px, 6vw, 60px)"
       }}>
+        <AnimatePresence mode="wait">
 
-        {/* Quick Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
-          {[
-            { label: "City",      value: festival.city,     icon: "📍" },
-            { label: "Best Time", value: festival.bestTime, icon: "🌤" },
-            { label: "Duration",  value: festival.duration, icon: "⏱" },
-          ].map((stat) => (
-            <div key={stat.label} style={{
-              background: cardBg, borderRadius: "14px",
-              border: "1.5px solid #E9C46A",
-              padding: "clamp(10px, 2vw, 16px)", textAlign: "center"
-            }}>
-              <div style={{ fontSize: "18px", marginBottom: "4px" }}>{stat.icon}</div>
-              <div style={{ fontSize: "10px", color: "#C65D3A", fontWeight: "700", letterSpacing: "0.5px", textTransform: "uppercase", marginBottom: "2px" }}>
-                {stat.label}
-              </div>
-              <div style={{ fontSize: "clamp(10px, 1.5vw, 13px)", fontWeight: "600", color: text }}>
-                {stat.value}
-              </div>
-            </div>
-          ))}
-        </motion.div>
+          {/* ── FESTIVALS TAB ── */}
+          {activeTab === "festivals" && (
+            <motion.div
+              key="festivals"
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
 
-        {/* Full Story */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          style={{ background: cardBg, borderRadius: "20px", padding: "clamp(16px, 4vw, 28px)", border: "1px solid rgba(233,196,106,0.3)" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: "700", color: "#C65D3A", marginBottom: "12px", marginTop: 0 }}>
-            📖 The Story
-          </h2>
-          <p style={{ fontSize: "clamp(13px, 2vw, 15px)", lineHeight: "1.8", color: muted, margin: 0 }}>
-            {festival.fullStory}
-          </p>
-        </motion.div>
-
-        {/* Highlights */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          style={{ background: cardBg, borderRadius: "20px", padding: "clamp(16px, 4vw, 28px)", border: "1px solid rgba(233,196,106,0.3)" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: "700", color: "#C65D3A", marginBottom: "14px", marginTop: 0 }}>
-            ✨ Highlights
-          </h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {festival.highlights.map((h, i) => (
-              <motion.div key={i}
-                initial={{ opacity: 0, x: -15 }} animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + i * 0.07 }}
-                style={{
-                  display: "flex", alignItems: "center", gap: "10px",
-                  padding: "10px 12px", borderRadius: "10px",
-                  background: darkMode ? "rgba(233,196,106,0.08)" : "rgba(198,93,58,0.06)"
-                }}>
-                <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: "#C65D3A", flexShrink: 0 }} />
-                <span style={{ fontSize: "clamp(12px, 2vw, 14px)", color: text }}>{h}</span>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* ── Gallery ── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}>
-          <h2 style={{ fontSize: "16px", fontWeight: "700", color: "#C65D3A", marginBottom: "14px" }}>
-            🖼 Gallery
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
-            {festival.gallery.map((img, i) => (
-              <motion.div
-                key={i}
-                whileHover={{ scale: 1.03 }}
-                onClick={() => setSelectedImg(img)}
-                style={{ cursor: "zoom-in", borderRadius: "12px", overflow: "hidden", border: "1.5px solid #E9C46A" }}>
-                <img
-                  src={fixUrl(img)}
-                  alt={`${festival.name} ${i + 1}`}
-                  onError={(e) => {
-                    // fallback to hero image if gallery image fails
-                    e.currentTarget.src = fixUrl(festival.image)
-                  }}
-                  style={{ width: "100%", height: "clamp(80px, 18vw, 160px)", objectFit: "cover", display: "block" }}
+              {savedFestivals.length === 0 ? (
+                <EmptyState
+                  icon="🎉"
+                  title="No festivals saved yet"
+                  message="Go explore and save festivals you love!"
+                  darkMode={darkMode}
+                  onBrowse={() => navigate("/")}
                 />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+              ) : (
+                <motion.div
+                  variants={containerVariants} initial="hidden" animate="show"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(min(280px, 100%), 1fr))",
+                    gap: "clamp(12px, 3vw, 20px)"
+                  }}>
+                  {savedFestivals.map(f => (
+                    <motion.div key={f.id} variants={cardVariants}>
+                      <FestivalWishCard
+                        festival={f}
+                        darkMode={darkMode}
+                        cardBg={cardBg}
+                        text={text}
+                        muted={muted}
+                        isFavorite={isFavorite}
+                        onToggle={toggleFavorite}
+                        onNavigate={() => navigate(`/festival/${f.slug}`)}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </motion.div>
+          )}
 
-        {/* Location */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          style={{ background: cardBg, borderRadius: "20px", padding: "clamp(16px, 4vw, 28px)", border: "1px solid rgba(233,196,106,0.3)" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: "700", color: "#C65D3A", marginBottom: "8px", marginTop: 0 }}>
-            📍 Location
-          </h2>
-          <p style={{ fontSize: "14px", color: muted, marginBottom: "14px" }}>{festival.location}</p>
-          <a href={festival.mapUrl} target="_blank" rel="noreferrer"
-            style={{
-              display: "inline-block", padding: "10px 20px",
-              background: "#6D8B74", color: "#FAF7F2",
-              borderRadius: "10px", fontSize: "13px",
-              fontWeight: "700", textDecoration: "none"
-            }}>
-            Open in Google Maps →
-          </a>
-        </motion.div>
+          {/* ── TOURIST PLACES TAB ── */}
+          {activeTab === "places" && (
+            <motion.div
+              key="places"
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.25 }}>
 
-        {/* Related Festivals */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}>
-          <h2 style={{ fontSize: "16px", fontWeight: "700", color: "#C65D3A", marginBottom: "14px" }}>
-            🎉 Related Festivals
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(160px, 100%), 1fr))", gap: "12px" }}>
-            {festivals.filter((f) => f.id !== festival.id).slice(0, 3).map((f) => (
-              <motion.div key={f.id} whileHover={{ y: -4 }}
-                onClick={() => navigate(`/festival/${f.slug}`)}
-                style={{ background: cardBg, borderRadius: "14px", border: "1.5px solid #E9C46A", overflow: "hidden", cursor: "pointer" }}>
-                <img src={fixUrl(f.image)} alt={f.name}
-                  style={{ width: "100%", height: "clamp(70px, 15vw, 110px)", objectFit: "cover" }} />
-                <div style={{ padding: "10px" }}>
-                  <p style={{ fontWeight: "700", fontSize: "12px", color: text, margin: "0 0 2px" }}>{f.name}</p>
-                  <p style={{ fontSize: "11px", color: "#C65D3A", margin: 0 }}>📍 {f.city}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+              {savedPlaces.length === 0 ? (
+                <EmptyState
+                  icon="🏰"
+                  title="No tourist places saved yet"
+                  message="Explore Rajasthan and save places you want to visit!"
+                  darkMode={darkMode}
+                  onBrowse={() => navigate("/")}
+                />
+              ) : (
+                <motion.div
+                  variants={containerVariants} initial="hidden" animate="show"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(min(280px, 100%), 1fr))",
+                    gap: "clamp(12px, 3vw, 20px)"
+                  }}>
+                  {savedPlaces.map(p => (
+                    <motion.div key={p.id} variants={cardVariants}>
+                      <PlaceWishCard
+                        place={p}
+                        darkMode={darkMode}
+                        cardBg={cardBg}
+                        text={text}
+                        muted={muted}
+                        isPlaceFavorite={isPlaceFavorite}
+                        onToggle={togglePlaceFavorite}
+                        onNavigate={() => navigate(`/place/${p.id}`)}
+                      />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              )}
+            </motion.div>
+          )}
 
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}
+
+// ── Festival Wishlist Card ──
+function FestivalWishCard({ festival, darkMode: _darkMode, cardBg, text, muted, isFavorite, onToggle, onNavigate }: any) {
+  const saved = isFavorite(festival.id)
+  return (
+    <motion.div
+      whileHover={{ y: -6, boxShadow: "0 12px 28px rgba(0,0,0,0.13)" }}
+      onClick={onNavigate}
+      style={{
+        background: cardBg, border: "1.5px solid #E9C46A",
+        borderRadius: "20px", overflow: "hidden",
+        cursor: "pointer", boxShadow: "0 4px 12px rgba(198,93,58,0.10)",
+        transition: "box-shadow 0.3s"
+      }}>
+      <div style={{ position: "relative" }}>
+        <img src={festival.image} alt={festival.name}
+          style={{ width: "100%", height: "170px", objectFit: "cover" }}
+          onError={e => { e.currentTarget.src = "https://via.placeholder.com/600x300?text=No+Image" }} />
+        <span style={{
+          position: "absolute", top: "10px", left: "10px",
+          background: "rgba(198,93,58,0.90)", color: "#FAF7F2",
+          fontSize: "11px", fontWeight: "700", padding: "3px 10px", borderRadius: "20px"
+        }}>{festival.category}</span>
+        <motion.button
+          whileTap={{ scale: 1.2 }}
+          onClick={e => { e.stopPropagation(); onToggle(festival.id) }}
+          style={{
+            position: "absolute", top: "10px", right: "10px",
+            background: "rgba(250,247,242,0.92)", border: "none",
+            borderRadius: "50%", width: "32px", height: "32px",
+            cursor: "pointer", fontSize: "15px",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
+          }}>
+          {saved ? "❤️" : "🤍"}
+        </motion.button>
+      </div>
+      <div style={{ padding: "14px" }}>
+        <h3 style={{ fontSize: "15px", fontWeight: "700", color: text, margin: "0 0 4px" }}>
+          {festival.name}
+        </h3>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+          <span style={{ fontSize: "12px", color: "#C65D3A", fontWeight: "600" }}>📍 {festival.city}</span>
+          <span style={{ fontSize: "12px", color: muted }}>📅 {festival.date}</span>
+        </div>
+        <p style={{
+          fontSize: "12px", color: muted, margin: "0 0 12px", lineHeight: "1.5",
+          display: "-webkit-box", WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical", overflow: "hidden"
+        }}>{festival.description}</p>
+        <button
+          onClick={e => { e.stopPropagation(); onNavigate() }}
+          style={{
+            width: "100%", padding: "8px", borderRadius: "10px",
+            border: "none", background: "#C65D3A",
+            color: "#FAF7F2", fontSize: "12px", fontWeight: "600", cursor: "pointer"
+          }}
+          onMouseEnter={e => (e.currentTarget.style.background = "#A64B2A")}
+          onMouseLeave={e => (e.currentTarget.style.background = "#C65D3A")}>
+          View Details →
+        </button>
       </div>
     </motion.div>
   )
 }
 
-export default FestivalDetail
+// ── Tourist Place Wishlist Card ──
+function PlaceWishCard({ place, darkMode, cardBg, text, muted, isPlaceFavorite, onToggle, onNavigate }: any) {
+  const saved = isPlaceFavorite(place.id)
+  return (
+    <motion.div
+      whileHover={{ y: -6, boxShadow: "0 12px 28px rgba(0,0,0,0.13)" }}
+      onClick={onNavigate}
+      style={{
+        background: cardBg, border: "1.5px solid #E9C46A",
+        borderRadius: "20px", overflow: "hidden",
+        cursor: "pointer", boxShadow: "0 4px 12px rgba(198,93,58,0.10)",
+        transition: "box-shadow 0.3s"
+      }}>
+      <div style={{ position: "relative" }}>
+        <img src={place.image} alt={place.name}
+          style={{ width: "100%", height: "170px", objectFit: "cover" }}
+          onError={e => { e.currentTarget.src = "https://via.placeholder.com/600x300?text=No+Image" }} />
+        <span style={{
+          position: "absolute", top: "10px", left: "10px",
+          background: "rgba(198,93,58,0.90)", color: "#FAF7F2",
+          fontSize: "11px", fontWeight: "700", padding: "3px 10px", borderRadius: "20px"
+        }}>Tourist Place</span>
+        <span style={{
+          position: "absolute", top: "10px", right: "10px",
+          background: "rgba(250,247,242,0.92)", color: "#C65D3A",
+          fontSize: "12px", fontWeight: "700", padding: "4px 10px", borderRadius: "20px",
+          display: "flex", alignItems: "center", gap: "3px"
+        }}>⭐ {place.rating}</span>
+        <motion.button
+          whileTap={{ scale: 1.2 }}
+          onClick={e => { e.stopPropagation(); onToggle(place.id) }}
+          style={{
+            position: "absolute", bottom: "10px", right: "10px",
+            background: "rgba(250,247,242,0.92)", border: "none",
+            borderRadius: "50%", width: "32px", height: "32px",
+            cursor: "pointer", fontSize: "15px",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.15)"
+          }}>
+          {saved ? "❤️" : "🤍"}
+        </motion.button>
+      </div>
+      <div style={{ padding: "14px" }}>
+        <h3 style={{ fontSize: "15px", fontWeight: "700", color: text, margin: "0 0 4px" }}>
+          {place.name}
+        </h3>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+          <span style={{ fontSize: "12px", color: "#C65D3A", fontWeight: "600" }}>📍 {place.city}</span>
+          <span style={{ fontSize: "12px", color: "#6D8B74", fontWeight: "600" }}>🏷️ {place.tag}</span>
+        </div>
+        <p style={{
+          fontSize: "12px", color: muted, margin: "0 0 12px", lineHeight: "1.5",
+          display: "-webkit-box", WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical", overflow: "hidden"
+        }}>{place.description}</p>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={e => { e.stopPropagation(); onToggle(place.id) }}
+            style={{
+              flex: 1, padding: "8px", borderRadius: "10px",
+              border: "1.5px solid #E9C46A", background: "transparent",
+              color: darkMode ? "#E9C46A" : "#C65D3A",
+              fontSize: "12px", fontWeight: "600", cursor: "pointer"
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(233,196,106,0.15)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+            {saved ? "❤️ Saved" : "🤍 Save"}
+          </button>
+          <button
+            onClick={e => { e.stopPropagation(); onNavigate() }}
+            style={{
+              flex: 1, padding: "8px", borderRadius: "10px",
+              border: "none", background: "#C65D3A",
+              color: "#FAF7F2", fontSize: "12px", fontWeight: "600", cursor: "pointer"
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = "#A64B2A")}
+            onMouseLeave={e => (e.currentTarget.style.background = "#C65D3A")}>
+            Explore →
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+// ── Empty State ──
+function EmptyState({ icon, title, message, darkMode, onBrowse }: {
+  icon: string; title: string; message: string; darkMode: boolean; onBrowse: () => void
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+      style={{ textAlign: "center", padding: "60px 20px" }}>
+      <p style={{ fontSize: "52px", marginBottom: "12px" }}>{icon}</p>
+      <h3 style={{ fontSize: "18px", fontWeight: "700", color: darkMode ? "#FAF7F2" : "#2B2B2B", marginBottom: "8px" }}>
+        {title}
+      </h3>
+      <p style={{ fontSize: "13px", color: darkMode ? "#C8B8A8" : "#888888", marginBottom: "24px" }}>
+        {message}
+      </p>
+      <button
+        onClick={onBrowse}
+        style={{
+          padding: "10px 28px", background: "#C65D3A",
+          color: "#FAF7F2", border: "none", borderRadius: "12px",
+          fontSize: "13px", fontWeight: "700", cursor: "pointer"
+        }}
+        onMouseEnter={e => (e.currentTarget.style.background = "#A64B2A")}
+        onMouseLeave={e => (e.currentTarget.style.background = "#C65D3A")}>
+        Browse Now →
+      </button>
+    </motion.div>
+  )
+}
+
+export default FavoritesPage

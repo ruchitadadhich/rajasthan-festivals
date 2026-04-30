@@ -4,14 +4,15 @@ import {
   Home, CalendarDays, Heart, Clock,
   MapPin, Moon, Sun, Menu,
   LayoutGrid, Landmark, Star, Music, PersonStanding,
-  UtensilsCrossed, FerrisWheel, Palette, ChevronDown
+  UtensilsCrossed, FerrisWheel, Palette, ChevronDown,
+  MapPinned
 } from "lucide-react"
-import festivals from "../Data/Festivals"
 
 const cities = ["All", "Jaipur", "Jodhpur", "Udaipur", "Jaisalmer", "Pushkar", "Bikaner", "Dungarpur"]
 
 const categories = [
   { label: "All",         icon: <LayoutGrid      size={15} /> },
+  { label: "Tourist Places", icon: <MapPinned    size={15} /> }, 
   { label: "Cultural",    icon: <Landmark        size={15} /> },
   { label: "Religious",   icon: <Star            size={15} /> },
   { label: "Music",       icon: <Music           size={15} /> },

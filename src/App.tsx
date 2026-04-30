@@ -2,10 +2,10 @@ import { useState } from "react"
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom"
 import Sidebar from "../Components/SidebarPage"
 import HomePage from "../Pages/HomePages"
+import PlaceDetail from "../Pages/PageDetail"
 import FestivalDetail from "../Pages/FetivalDetailPage"
 import FavoritesPage from "../Pages/FavDetailPage"
 import UpcomingPage from "../Pages/UpComing"
-
 function AppInner() {
   const [selectedCity, setSelectedCity] = useState("All")
   const [selectedCategory, setSelectedCategory] = useState("All")
@@ -108,6 +108,7 @@ function AppInner() {
           <Route path="/festival/:slug" element={<FestivalDetail darkMode={darkMode} />} />
           <Route path="/favorites"      element={<FavoritesPage  darkMode={darkMode} />} />
           <Route path="/upcoming"       element={<UpcomingPage   darkMode={darkMode} />} />
+          <Route path="/place/:id" element={<PlaceDetail darkMode={darkMode} />} />
         </Routes>
       </div>
 

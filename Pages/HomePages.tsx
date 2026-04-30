@@ -2,7 +2,9 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { useLocation } from "react-router-dom"
 import festivals from "../Data/Festivals"
+import touristPlaces from "../Data/Travel"
 import EventCard from "../Components/EventCards"
+import PlaceCard from "../Components/PlaceCard"
 import { useFavorites } from "../hooks/UseFav"
 
 interface HomePageProps {
@@ -28,22 +30,33 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
     }
   }, [location])
 
-  const filtered = festivals.filter((f) => {
-    const matchCity     = selectedCity === "All"     || f.city === selectedCity
-    const matchCategory = selectedCategory === "All" || f.category === selectedCategory
-    const matchSearch   =
-      f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      f.city.toLowerCase().includes(searchQuery.toLowerCase())
+  // ── Merge both data sources ──
+  const allFestivals = festivals.map(f => ({ ...f, _type: "festival" as const }))
+  const allPlaces = touristPlaces.map(p => ({ ...p, _type: "place" as const }))
+  const allData = [...allFestivals, ...allPlaces]
+
+  // ── Filter ──
+  const filtered = allData.filter((item) => {
+    const matchCity = selectedCity === "All" || item.city === selectedCity
+    const matchCategory = selectedCategory === "All" || item.category === selectedCategory
+    const matchSearch =
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.city.toLowerCase().includes(searchQuery.toLowerCase())
     return matchCity && matchCategory && matchSearch
   })
 
-  // Heading label
+  // ── Counts for pill ──
+  const festCount = filtered.filter(i => i._type === "festival").length
+  const placeCount = filtered.filter(i => i._type === "place").length
+
+  // ── Heading ──
   const headingLabel = () => {
+    if (selectedCategory === "Tourist Places") return "🗺️ Tourist Places"
     if (selectedCity !== "All" && selectedCategory !== "All")
       return `📍 ${selectedCity} · ${selectedCategory}`
     if (selectedCity !== "All") return `📍 ${selectedCity}`
     if (selectedCategory !== "All") return `🏷️ ${selectedCategory}`
-    return "🎉 All Festivals"
+    return "🎉 Festivals & Places"
   }
 
   return (
@@ -76,7 +89,8 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
               lineHeight: "1.2", margin: 0,
               fontSize: "clamp(22px, 5vw, 42px)"
             }}>
-            Discover Rajasthan<br />Festivals
+            Discover Rajasthan<br />
+            Festivals & Places
           </motion.h1>
           <motion.p
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -101,7 +115,7 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
             }}>
             <input
               type="text"
-              placeholder="Search festival or city..."
+              placeholder="Search festival, place or city..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
@@ -127,12 +141,13 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
         </div>
       </div>
 
-      {/* ── Active Category Pill (agar All nahi) ── */}
-      {selectedCategory !== "All" && (
-        <div style={{
-          padding: "12px clamp(12px, 4vw, 32px) 0",
-          display: "flex", alignItems: "center", gap: "8px"
-        }}>
+      {/* ── Stats Pills ── */}
+      <div style={{
+        padding: "14px clamp(12px, 4vw, 32px) 0",
+        display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap"
+      }}>
+        {/* Active category pill */}
+        {selectedCategory !== "All" && (
           <span style={{
             display: "inline-flex", alignItems: "center", gap: "6px",
             padding: "5px 14px", borderRadius: "20px",
@@ -142,8 +157,30 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
             {selectedCategory}
             <span style={{ opacity: 0.6 }}>· {filtered.length} results</span>
           </span>
-        </div>
-      )}
+        )}
+
+        {/* Festival / Place count badges — only on All category */}
+        {selectedCategory === "All" && festCount > 0 && (
+          <span style={{
+            padding: "4px 12px", borderRadius: "20px",
+            background: "rgba(198,93,58,0.15)",
+            color: "#C65D3A", fontSize: "12px", fontWeight: "600",
+            border: "1px solid rgba(198,93,58,0.3)"
+          }}>
+            🎉 {festCount} Festivals
+          </span>
+        )}
+        {selectedCategory === "All" && placeCount > 0 && (
+          <span style={{
+            padding: "4px 12px", borderRadius: "20px",
+            background: "rgba(13,148,136,0.1)",
+            color: "#0D9488", fontSize: "12px", fontWeight: "600",
+            border: "1px solid rgba(13,148,136,0.25)"
+          }}>
+            🗺️ {placeCount} Places
+          </span>
+        )}
+      </div>
 
       {/* ── Cards Section ── */}
       <div id="all-events" style={{ padding: "clamp(16px, 4vw, 40px) clamp(12px, 4vw, 32px)" }}>
@@ -159,7 +196,7 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
             {headingLabel()}
           </h2>
           <span style={{ fontSize: "13px", color: darkMode ? "#C8B8A8" : "#888888" }}>
-            {filtered.length} festival{filtered.length !== 1 ? "s" : ""} found
+            {filtered.length} result{filtered.length !== 1 ? "s" : ""} found
           </span>
         </div>
 
@@ -173,15 +210,23 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
               gridTemplateColumns: "repeat(auto-fill, minmax(min(280px, 100%), 1fr))",
               gap: "clamp(12px, 3vw, 24px)"
             }}>
-            {filtered.map((festival) => (
-              <EventCard
-                key={festival.id}
-                festival={festival}
-                darkMode={darkMode}
-                isFavorite={isFavorite(festival.id)}
-                onToggleFavorite={toggleFavorite}
-              />
-            ))}
+            {filtered.map((item) =>
+              item._type === "place" ? (
+                <PlaceCard
+                  key={`place-${item.id}`}
+                  place={item as any}
+                  darkMode={darkMode}
+                />
+              ) : (
+                <EventCard
+                  key={`fest-${item.id}`}
+                  festival={item as any}
+                  darkMode={darkMode}
+                  isFavorite={isFavorite(item.id)}
+                  onToggleFavorite={toggleFavorite}
+                />
+              )
+            )}
           </motion.div>
         ) : (
           <motion.div
@@ -189,7 +234,7 @@ function HomePage({ selectedCity, selectedCategory, darkMode }: HomePageProps) {
             style={{ textAlign: "center", padding: "60px 0", color: darkMode ? "#C8B8A8" : "#999999" }}>
             <p style={{ fontSize: "40px", marginBottom: "12px" }}>🔍</p>
             <p style={{ fontSize: "16px" }}>
-              No festivals found
+              No results found
               {selectedCategory !== "All" && <> in <strong>{selectedCategory}</strong></>}
               {selectedCity !== "All" && <> for <strong>{selectedCity}</strong></>}
               {searchQuery && <> matching "<strong>{searchQuery}</strong>"</>}
